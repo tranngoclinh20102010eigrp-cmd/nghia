@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Zone - Rắn Săn Mồi Cổ Điển</title>
+    <style>
+        /* --- CẤU TRÚC GIAO DIỆN (CSS) --- */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: #2d2d2d;
+            padding: 15px 0;
+            border-bottom: 3px solid #00ff88;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        nav {
+            margin-top: 10px;
+        }
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        nav a:hover {
+            color: #00ff88;
+        }
+
+        /* Main Bố cục 2 cột */
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        /* Khu vực Chơi Game */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Lớp phủ khóa game khi chưa đăng nhập */
+        #gameOverlay {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 8px;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #gameOverlay h3 {
+            color: #ff9900;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        #gameOverlay p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .score-board-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            background: #2d2d2d;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            box-sizing: border-box;
+        }
+
+        .score-item {
+            font-size: 16px;
+        }
+
+        .score-item span {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        canvas {
+            background-color: #050b14;
+            border: 4px solid #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            display: block;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 15px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-game {
+            background-color: #00ff88;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .btn-game:hover {
+            background-color: #00cc6a;
+            transform: scale(1.05);
+        }
+
+        .btn-pause {
+            background-color: #ff9900;
+            color: #000;
+        }
+
+        /* Side Panel */
+        .side-panel {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00ff88;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .card h2 {
+            margin: 0;
+            color: #00ff88;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .btn-reset-lb {
+            background-color: #ff4d4d;
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .btn-reset-lb:hover {
+            background-color: #cc0000;
+        }
+
+        /* Form Tài khoản */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-form input {
+            padding: 10px;
+            background-color: #1a1a1a;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-auth {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-login {
+            background-color: #00ff88;
+            color: #000;
+        }
+
+        .btn-register {
+            background-color: #ff9900;
+            color: #000;
+        }
+
+        .user-info {
+            text-align: center;
+        }
+
+        .btn-logout {
+            background-color: #ff4d4d;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* Bảng xếp hạng */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .leaderboard-table th {
+            color: #ffd700;
+        }
+
+        .leaderboard-table td:last-child {
+            text-align: right;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .active-user-row {
+            background-color: rgba(0, 255, 136, 0.15);
+        }
+
+        /* Phần Lưu trữ File Text thu gọn */
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-file-icon {
+            flex: 1;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .btn-file-icon:hover {
+            background-color: #2980b9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2d2d2d;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="logo">GAME ZONE</a>
+        <nav>
+            <a href="#">Trang chủ</a>
+            <a href="#">Bảng xếp hạng</a>
+            <a href="#">Cộng đồng</a>
+            <a href="#">Tin tức Game</a>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <!-- Khối bên trái: Game -->
+        <div class="game-container">
+            <!-- Lớp phủ yêu cầu đăng nhập -->
+            <div id="gameOverlay">
+                <h3>🔒 YÊU CẦU ĐĂNG NHẬP</h3>
+                <p>Vui lòng đăng nhập hoặc đăng ký tài khoản ở bảng bên phải để bắt đầu chơi game!</p>
+            </div>
+
+            <div class="score-board-container">
+                <div class="score-item">Điểm số: <span id="score">0</span></div>
+                <div class="score-item">Xếp hạng: <span id="currentRank">--</span></div>
+            </div>
+
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+            <div class="controls">
+                <p>Sử dụng phím <strong>⬆ ⬇ ⬅ ➡</strong> hoặc <strong>Di chuột</strong> để điều khiển</p>
+                <p style="font-size: 13px; color: #00ff88;">💡 Phím [Space] để Tạm dừng | Bạn có thể đi xuyên tường!</p>
+                
+                <div class="button-group">
+                    <button class="btn-game" onclick="startGame()">CHƠI NGAY</button>
+                    <button class="btn-game btn-pause" id="pauseBtn" onclick="togglePause()">⏸ TẠM DỪNG</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khối bên phải: Tài khoản, Bảng xếp hạng & File Text thu gọn -->
+        <div class="side-panel">
+            <!-- Thẻ Tài Khoản -->
+            <div class="card" id="authCard">
+                <div class="card-header">
+                    <h2 id="authTitle">ĐĂNG NHẬP / ĐĂNG KÝ</h2>
+                </div>
+                <div id="authForm" class="auth-form">
+                    <input type="text" id="username" placeholder="Tên tài khoản" autocomplete="off">
+                    <input type="password" id="password" placeholder="Mật khẩu">
+                    <div class="auth-buttons">
+                        <button class="btn-auth btn-login" onclick="login()">Đăng nhập</button>
+                        <button class="btn-auth btn-register" onclick="register()">Đăng ký</button>
+                    </div>
+                </div>
+                <div id="userInfo" class="user-info" style="display: none;">
+                    <p>Xin chào, <strong id="loggedInUser" style="color:#00ff88;"></strong>!</p>
+                    <p>Điểm cao nhất: <span id="userHighScore" style="color:#ffd700;">0</span></p>
+                    <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+                </div>
+            </div>
+
+            <!-- Thẻ Bảng Xếp Hạng -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🏆 BẢNG XẾP HẠNG</h2>
+                    <button class="btn-reset-lb" onclick="resetLeaderboard()">🔄 Làm mới</button>
+                </div>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Người chơi</th>
+                            <th>Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Danh sách xếp hạng tự động -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Thẻ Xuất/Nhập File Text Thu Gọn -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>💾 DỮ LIỆU TEXT</h2>
+                </div>
+                <div class="file-actions">
+                    <button class="btn-file-icon" onclick="exportDataToFile()" title="Tải xuống file Text">📥 Tải xuống</button>
+                    <button class="btn-file-icon" style="background-color: #27ae60;" onclick="document.getElementById('importFile').click()" title="Tải lên file Text">📂 Tải lên</button>
+                    <input type="file" id="importFile" accept=".txt" style="display: none;" onchange="importDataFromFile(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 Game Zone Entertainment. Designed by You.
+    </footer>
+
+    <script>
+        /* --- QUẢN LÝ DỮ LIỆU TÀI KHOẢN & BẢNG XẾP HẠNG --- */
+        function getUsersData() {
+            let data = localStorage.getItem("game_users");
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveUsersData(users) {
+            localStorage.setItem("game_users", JSON.stringify(users));
+        }
+
+        let currentUser = localStorage.getItem("current_user") || null;
+
+        function updateAuthUI() {
+            let overlay = document.getElementById("gameOverlay");
+            if (currentUser) {
+                document.getElementById("authForm").style.display = "none";
+                document.getElementById("userInfo").style.display = "block";
+                document.getElementById("authTitle").innerText = "TÀI KHOẢN";
+                document.getElementById("loggedInUser").innerText = currentUser;
+
+                let users = getUsersData();
+                let highScore = users[currentUser] ? users[currentUser].highScore : 0;
+                document.getElementById("userHighScore").innerText = highScore;
+
+                // Ẩn lớp khóa game khi đã đăng nhập
+                overlay.style.display = "none";
+            } else {
+                document.getElementById("authForm").style.display = "flex";
+                document.getElementById("userInfo").style.display = "none";
+                document.getElementById("authTitle").innerText = "ĐĂNG NHẬP / ĐĂNG KÝ";
+
+                // Hiển thị lớp khóa game khi chưa đăng nhập
+                overlay.style.display = "flex";
+                if(game) {
+                    clearInterval(game);
+                    game = null;
+                }
+            }
+        }
+
+        function register() {
+            let u = document.getElementById("username").value.trim();
+            let p = document.getElementById("password").value.trim();
+
+            if (!u || !p) {
+                alert("Vui lòng nhập đầy đủ Tên tài khoản và Mật khẩu!");
+                return;
+            }
+
+            let users = getUsersData();
+            if (users[u]) {
+                alert("Tài khoản đã tồn tại! Vui lòng chọn tên khác hoặc đăng nhập.");
+                return;
+            }
+
+            users[u] = { password: p, highScore: 0 };
+            saveUsersData(users);
+
+            currentUser = u;
+            localStorage.setItem("current_user", currentUser);
+            alert("Đăng ký thành công!");
+            updateAuthUI();
+            updateLeaderboard();
+        }
+
+        function login() {
+            let u = document.getElementById("username").value.trim();
+            let p = document.getElementById("password").value.trim();
+
+            if (!u || !p) {
+                alert("Vui lòng nhập Tên tài khoản và Mật khẩu!");
+                return;
+            }
+
+            let users = getUsersData();
+            if (!users[u] || users[u].password !== p) {
+                alert("Tên tài khoản hoặc mật khẩu không chính xác!");
+                return;
+            }
+
+            currentUser = u;
+            localStorage.setItem("current_user", currentUser);
+            alert("Đăng nhập thành công!");
+            updateAuthUI();
+            updateLeaderboard();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem("current_user");
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("currentRank").innerText = "--";
+            updateAuthUI();
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard(liveScore = 0) {
+            let users = getUsersData();
+            let arr = [];
+
+            for (let u in users) {
+                let scoreToDisplay = users[u].highScore || 0;
+                if (currentUser && u === currentUser && liveScore > scoreToDisplay) {
+                    scoreToDisplay = liveScore;
+                }
+                arr.push({ username: u, highScore: scoreToDisplay });
+            }
+
+            arr.sort((a, b) => b.highScore - a.highScore);
+
+            let tbody = document.getElementById("leaderboardBody");
+            tbody.innerHTML = "";
+
+            if (arr.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Chưa có người chơi nào</td></tr>";
+                document.getElementById("currentRank").innerText = "--";
+                return;
+            }
+
+            let userRankFound = false;
+
+            arr.forEach((user, index) => {
+                let tr = document.createElement("tr");
+                if (currentUser && user.username === currentUser) {
+                    tr.classList.add("active-user-row");
+                    document.getElementById("currentRank").innerText = `#${index + 1}`;
+                    userRankFound = true;
+                }
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.username}</td>
+                    <td>${user.highScore}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (!userRankFound) {
+                document.getElementById("currentRank").innerText = "--";
+            }
+        }
+
+        function resetLeaderboard() {
+            if (confirm("Bạn có chắc chắn muốn làm mới (xóa toàn bộ) Bảng xếp hạng và tài khoản không?")) {
+                localStorage.removeItem("game_users");
+                localStorage.removeItem("current_user");
+                currentUser = null;
+                updateAuthUI();
+                updateLeaderboard();
+                alert("Đã làm mới Bảng xếp hạng thành công!");
+            }
+        }
+
+        function saveScore(score) {
+            if (!currentUser) return;
+
+            let users = getUsersData();
+            if (users[currentUser]) {
+                if (score > users[currentUser].highScore) {
+                    users[currentUser].highScore = score;
+                    saveUsersData(users);
+                    alert("🎉 Kỷ lục mới! Điểm của bạn đã được cập nhật vào Bảng Xếp Hạng.");
+                    updateAuthUI();
+                    updateLeaderboard();
+                }
+            }
+        }
+
+        /* --- XUẤT VÀ NHẬP FILE TEXT --- */
+        function exportDataToFile() {
+            let data = localStorage.getItem("game_users");
+            if (!data || data === "{}") {
+                alert("Chưa có dữ liệu người chơi hoặc bảng xếp hạng trống!");
+                return;
+            }
+
+            let blob = new Blob([data], { type: "text/plain;charset=utf-8" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = "bang_xep_hang_game.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importDataFromFile(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let content = e.target.result;
+                    JSON.parse(content);
+                    
+                    localStorage.setItem("game_users", content);
+                    updateAuthUI();
+                    updateLeaderboard();
+                    alert("Khôi phục bảng xếp hạng từ file text thành công!");
+                } catch (error) {
+                    alert("Lỗi: File text không đúng định dạng dữ liệu của game!");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+
+        /* --- LOGIC RẮN SĂN MỒI --- */
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const box = 20; 
+        let snake = [];
+        let score = 0;
+        let d = "RIGHT"; 
+        let nextD = "RIGHT";
+        let food;
+        let game = null;
+        let isPaused = false;
+
+        function initGame() {
+            snake = [];
+            snake[0] = { x: 9 * box, y: 10 * box };
+            snake[1] = { x: 8 * box, y: 10 * box };
+            snake[2] = { x: 7 * box, y: 10 * box };
+            
+            score = 0;
+            d = "RIGHT";
+            nextD = "RIGHT";
+            isPaused = false;
+            document.getElementById("pauseBtn").innerText = "⏸ TẠM DỪNG";
+            document.getElementById("score").innerText = score;
+            createFood();
+            updateLeaderboard(score);
+            if(game) clearInterval(game);
+        }
+
+        function createFood() {
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box
+            };
+        }
+
+        document.addEventListener("keydown", direction);
+
+        function direction(event) {
+            if (!currentUser) return; // Chặn phím nếu chưa đăng nhập
+
+            let key = event.keyCode;
+            if (key === 32) {
+                togglePause();
+                event.preventDefault();
+                return;
+            }
+
+            if(isPaused) return;
+
+            if(key == 37 && d != "RIGHT"){
+                nextD = "LEFT";
+            } else if(key == 38 && d != "DOWN"){
+                nextD = "UP";
+            } else if(key == 39 && d != "LEFT"){
+                nextD = "RIGHT";
+            } else if(key == 40 && d != "UP"){
+                nextD = "DOWN";
+            }
+        }
+
+        canvas.addEventListener("mousemove", function(event) {
+            if (!currentUser || isPaused || !game) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const headX = snake[0].x + box / 2;
+            const headY = snake[0].y + box / 2;
+
+            const diffX = mouseX - headX;
+            const diffY = mouseY - headY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 0 && d !== "LEFT") nextD = "RIGHT";
+                else if (diffX < 0 && d !== "RIGHT") nextD = "LEFT";
+            } else {
+                if (diffY > 0 && d !== "UP") nextD = "DOWN";
+                else if (diffY < 0 && d !== "DOWN") nextD = "UP";
+            }
+        });
+
+        function togglePause() {
+            if (!game) return;
+            isPaused = !isPaused;
+            let pauseBtn = document.getElementById("pauseBtn");
+            if (isPaused) {
+                pauseBtn.innerText = "▶ TIẾP TỤC";
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "26px Courier New";
+                ctx.fillText("TẠM DỪNG", 140, 200);
+            } else {
+                pauseBtn.innerText = "⏸ TẠM DỪNG";
+            }
+        }
+
+        function collision(head, array){
+            for(let i = 0; i < array.length; i++){
+                if(head.x == array[i].x && head.y == array[i].y){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function drawSnake() {
+            for(let i = 0; i < snake.length; i++) {
+                let centerX = snake[i].x + box / 2;
+                let centerY = snake[i].y + box / 2;
+
+                if (i === 0) {
+                    ctx.fillStyle = "#00ff88";
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, box / 2, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    ctx.fillStyle = "#000";
+                    let eyeOffset1 = {x: 0, y: 0};
+                    let eyeOffset2 = {x: 0, y: 0};
+
+                    if (d === "RIGHT") {
+                        eyeOffset1 = {x: 4, y: -4};
+                        eyeOffset2 = {x: 4, y: 4};
+                    } else if (d === "LEFT") {
+                        eyeOffset1 = {x: -4, y: -4};
+                        eyeOffset2 = {x: -4, y: 4};
+                    } else if (d === "UP") {
+                        eyeOffset1 = {x: -4, y: -4};
+                        eyeOffset2 = {x: 4, y: -4};
+                    } else if (d === "DOWN") {
+                        eyeOffset1 = {x: -4, y: 4};
+                        eyeOffset2 = {x: 4, y: 4};
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(centerX + eyeOffset1.x, centerY + eyeOffset1.y, 2.5, 0, 2 * Math.PI);
+                    ctx.arc(centerX + eyeOffset2.x, centerY + eyeOffset2.y, 2.5, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                } else {
+                    let radius = (box / 2) - (i / snake.length) * 2;
+                    if (radius < 4) radius = 4;
+
+                    ctx.fillStyle = i % 2 === 0 ? "#00cc6a" : "#2ecc71";
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawFood() {
+            let centerX = food.x + box / 2;
+            let centerY = food.y + box / 2;
+
+            ctx.fillStyle = "#ff3333";
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, box / 2 - 2, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.strokeStyle = "#8b4513";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - 6);
+            ctx.lineTo(centerX + 2, centerY - 10);
+            ctx.stroke();
+        }
+
+        function draw() {
+            if (isPaused) return;
+
+            d = nextD; 
+
+            ctx.fillStyle = "#050b14"; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawFood();
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if( d == "LEFT") snakeX -= box;
+            if( d == "UP") snakeY -= box;
+            if( d == "RIGHT") snakeX += box;
+            if( d == "DOWN") snakeY += box;
+
+            if (snakeX < 0) snakeX = canvas.width - box;
+            else if (snakeX >= canvas.width) snakeX = 0;
+
+            if (snakeY < 0) snakeY = canvas.height - box;
+            else if (snakeY >= canvas.height) snakeY = 0;
+
+            let newHead = {
+                x : snakeX,
+                y : snakeY
+            };
+
+            if(collision(newHead, snake)){
+                clearInterval(game);
+                game = null;
+                alert("Game Over! Rắn đã tự cắn vào mình.\nĐiểm của bạn: " + score);
+                
+                saveScore(score);
+                startGame(); 
+                return;
+            }
+
+            if(snakeX == food.x && snakeY == food.y){
+                score++;
+                document.getElementById("score").innerText = score;
+                createFood();
+                updateLeaderboard(score); 
+            } else {
+                snake.pop(); 
+            }
+
+            snake.unshift(newHead); 
+
+            drawSnake();
+        }
+
+        function startGame() {
+            if (!currentUser) {
+                alert("Vui lòng đăng nhập để chơi game!");
+                return;
+            }
+            initGame();
+            game = setInterval(draw, 150); 
+        }
+
+        // Khởi tạo ban đầu
+        updateAuthUI();
+        updateLeaderboard();
+
+        ctx.fillStyle = "#050b14";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#fff";
+        ctx.font = "18px Courier New";
+        ctx.fillText("Đăng nhập để bắt đầu!", 80, 200);
+
+    </script>
+</body>
+</html>
